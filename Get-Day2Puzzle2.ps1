@@ -13,9 +13,6 @@ param (
     [string]$FilePath='.\day2-puzzle-input.txt'
 )
 
-[uint16]$RedCubesReq = 12
-[uint16]$GreenCubesReq = 13
-[uint16]$BlueCubesReq = 14
 [string]$BlockSetSplitCh = ';'
 [string]$BlockSplitCh = ','
 [string]$BeginLineCh = ':'
@@ -23,7 +20,10 @@ $o = New-Object PSObject -Property @{id=0; red=0; blue=0; green=0;}
 [string]$GameMatch = '^Game\W+(?<GameID>\d+)\:'
 [string]$BlockMatch = '^(?<NumBlocks>\d+)\W+(?<BlockColor>red|blue|green)'
 [uint32]$GameSum = 0
-
+[uint16]$MinRedBlocks = 0
+[uint16]$MinBlueBlocks = 0
+[uint16]$MinGreenBlocks = 0
+$BlockArray = @()
 foreach ($line in (Get-Content $FilePath)) {
     if ($line -match $GameMatch) {
         $o.id = $Matches['GameID']
@@ -33,7 +33,10 @@ foreach ($line in (Get-Content $FilePath)) {
     }
     [string]$line2 = $line.SubString($line.IndexOf($BeginLineCh)+1)
     [string[]]$BlockSets = $line2.Split($BlockSetSplitCh)
-    $BlockArray = @()
+    $BlockArray.Clear()
+    $MinRedBlocks = 0
+    $MinGreenBlocks = 0
+    $MinBlueBlocks = 0
     foreach ($Draw in $BlockSets) {
         $o.red = 0
         $o.green = 0
@@ -54,16 +57,13 @@ foreach ($line in (Get-Content $FilePath)) {
         }
         $BlockArray += $o.PSObject.Copy()
     }
-    $TooManyBlocks = $BlockArray | Where-Object {
-        $_.red -gt $RedCubesReq -or 
-        $_.blue -gt $BlueCubesReq -or 
-        $_.green -gt $GreenCubesReq}
-    if ($TooManyBlocks) {
-        Write-Information "Skipped GameID: $($o.id)"
-    }
-    else {
-        $GameSum += $o.id
-    }
+    # Determine minimum blocks (assuming all colors will have at least 1 block)
+    $MinRedBlocks = ($BlockArray | Measure-Object -Property red -Maximum).Maximum
+    $MinGreenBlocks = ($BlockArray | Measure-Object -Property green -Maximum).Maximum
+    $MinBlueBlocks = ($BlockArray | Measure-Object -Property blue -Maximum).Maximum
+
+    # Calculate product of minimum blocks and add it to the sum of Games
+    $GameSum += ($MinRedBlocks * $MinGreenBlocks * $MinBlueBlocks)
 }
 
 Write-Output $GameSum
