@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <title>Day 1 - Puzzle 1 - HTML/JS</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta charset="utf-8">
+    <script>
+        function bodyOnload() {
+            document.getElementById('fileName')
+                .addEventListener('change', function () {
+                    let fileReader = new FileReader();
+                    fileReader.onload = function () {
+                        document.getElementById('fileOutput')
+                            .textContent = fileReader.result;
+                    }
+
+                    fileReader.readAsText(this.files[0]);
+                })
+        }
+
+        function btnPush() {
+            var fileOutput = document.getElementById('fileOutput')
+                .innerText.split("\r\n")
+            var answer = document.getElementById('answer');
+            var numbers = [];
+            var sumNumbers = 0;
+            for (let i = 0; i < fileOutput.length; i++) {
+                let line = fileOutput[i];
+                for (let i2 = 0; i2 < line.length; i2++) {
+                    // check if we have a number
+                    if (isNaN(line[i2]) == false) {
+                        numbers.push(line[i2]);
+                    }
+                }
+                let firstNumber = numbers[0];
+                let secondNumber = numbers[numbers.length-1];
+                sumNumbers += Number(firstNumber + secondNumber);
+                numbers = [];
+            }
+
+            answer.innerText = sumNumbers;
+
+            return true;
+        }
+    </script>
+</head>
+<body onload="bodyOnload()">
+    <div>
+        <p>
+            <input title="File Name" type="file" name="fileName" 
+                id="fileName" value="day1puzzle1.txt"> <br>
+            <button id="btn1" name="btn1" value="Submit" 
+                onclick="btnPush()">Calculate</button>
+        </p>
+    </div>
+    <div>
+        <p id="answer"></p>
+    </div>
+    <div>
+        <pre id="fileOutput"></pre>
+    </div>
+</body>
+</html>
